@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Moedas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        h2 { text-align: center; color: #333; }
+        label { font-weight: bold; margin-top: 10px; display: block; color: #555; }
+        input, select {
+            width: 100%; padding: 10px; margin-top: 5px;
+            border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;
+        }
+        button {
+            width: 100%; padding: 10px; margin-top: 20px;
+            background-color: #007bff; color: white; border: none;
+            border-radius: 5px; font-size: 16px; cursor: pointer;
+        }
+        button:hover { background-color: #0056b3; }
+        .resultado {
+            margin-top: 20px; padding: 15px; border-radius: 5px;
+            background-color: #e9ecef; text-align: center; display: none;
+        }
+        .valor-final { font-size: 24px; font-weight: bold; color: #28a745; }
+        .taxa { font-size: 12px; color: #6c757d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Conversor Global</h2>
+    <form id="formConversao">
+        <label for="valor">Valor para converter:</label>
+        <input type="number" id="valor" step="0.01" placeholder="Ex: 100.00" required>
+
+        <label for="origem">Moeda de Origem:</label>
+        <select id="origem">
+            <option value="USD">Dólar (USD)</option>
+            <option value="BRL">Real (BRL)</option>
+            <option value="EUR">Euro (EUR)</option>
+        </select>
+
+        <label for="destino">Moeda de Destino:</label>
+        <select id="destino">
+            <option value="BRL">Real (BRL)</option>
+            <option value="USD">Dólar (USD)</option>
+            <option value="EUR">Euro (EUR)</option>
+        </select>
+
+        <button type="submit">Converter</button>
+    </form>
+
+    <div class="resultado" id="boxResultado">
+        <div class="valor-final" id="valorConvertido"></div>
+        <div class="taxa" id="taxaAplicada"></div>
+    </div>
+</div>
+
+<script>
+    // Aqui é onde o Front-end fala com o seu Back-end!
+    document.getElementById('formConversao').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Evita que a página recarregue
+
+        const valor = document.getElementById('valor').value;
+        const origem = document.getElementById('origem').value;
+        const destino = document.getElementById('destino').value;
+
+        // Monta o pacote JSON igual fazíamos no Postman
+        const payload = {
+            moedaValor: parseFloat(valor),
+            moedaOrigem: origem,
+            moedaDestino: destino
+        };
+
+        try {
+            // Chama a sua API
+            const response = await fetch('/api/conversao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Exibe o resultado na tela
+                document.getElementById('boxResultado').style.display = 'block';
+                document.getElementById('valorConvertido').innerText = 'Resultado: ' + data.valorConvertido.toFixed(2);
+                document.getElementById('taxaAplicada').innerText = 'Taxa de câmbio: ' + data.taxa;
+            } else {
+                alert('Erro ao converter. Verifique as moedas e tente novamente.');
+            }
+        } catch (error) {
+            alert('Erro de comunicação com o servidor.');
+            console.error(error);
+        }
+    });
+</script>
+
+</body>
+</html>
